@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to install and configure Oh My Zsh with autocomplete, autosuggestions, syntax highlighting, fzf, and useful aliases on macOS
+# Script to install and configure Oh My Zsh with Powerlevel10k, plugins, aliases, autocompletion, and color highlighting on macOS
 
 set -e
 
@@ -24,6 +24,19 @@ echo "🔹 Configuring fzf..."
 $(brew --prefix)/opt/fzf/install --all
 
 ZSHRC="$HOME/.zshrc"
+
+echo "🔹 Installing Powerlevel10k theme..."
+if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+    ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+fi
+
+# Configure theme in .zshrc
+if grep -q '^ZSH_THEME=' "$ZSHRC"; then
+  sed -i '' 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' "$ZSHRC"
+else
+  echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> "$ZSHRC"
+fi
 
 echo "🔹 Updating plugins in $ZSHRC..."
 if grep -q "plugins=(" "$ZSHRC"; then
@@ -54,9 +67,9 @@ alias ....="cd ../../.."
 alias ~="cd ~"
 
 # Listing
-alias ll="ls -la"
-alias la="ls -A"
-alias l="ls -CF"
+alias ll="ls -la --color=auto"
+alias la="ls -A --color=auto"
+alias l="ls -CF --color=auto"
 
 # Git
 alias gs="git status"
@@ -79,9 +92,43 @@ alias brewu="brew update && brew upgrade"
 alias cls="clear"
 alias c="clear"
 alias reload="source ~/.zshrc"
+
+# NPM / Node
+alias ni="npm install"
+alias nr="npm run"
+alias ns="npm start"
+alias nt="npm test"
+alias nb="npm run build"
 EOF
 
-echo "🔹 Reloading Zsh..."
-source "$ZSHRC"
+echo "🔹 Configuring autocomplete, history, and colors..."
+cat << 'EOF' >> "$ZSHRC"
 
-echo "✅ Installation complete! Restart your terminal or run 'exec zsh'."
+# ------------------------
+# Zsh Completion & History
+# ------------------------
+
+# Enable completion system
+autoload -Uz compinit
+compinit
+
+# History settings
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_DUPS       # ignore duplicate commands
+setopt HIST_IGNORE_SPACE      # ignore commands starting with space
+setopt HIST_VERIFY            # show before running
+setopt SHARE_HISTORY          # share across sessions
+
+# Colorized autocomplete menu
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+
+# Case-insensitive completion
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+EOF
+
+echo "✅ Installation complete!"
+echo "👉 Starting Zsh with Powerlevel10k theme..."
+exec zsh
