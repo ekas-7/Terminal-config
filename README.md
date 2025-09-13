@@ -1,3 +1,6 @@
-nano install_ohmyzsh.sh   # paste code
-chmod +x install_ohmyzsh.sh
-./install_ohmyzsh.sh
+# Just Run this 
+```
+nano ter_config.sh   # paste code
+chmod +x ter_config.sh
+./ter_config.sh
+```
