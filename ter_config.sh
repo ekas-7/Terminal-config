@@ -17,18 +17,35 @@ else
   echo "✅ Oh My Zsh already installed."
 fi
 
-echo "🔹 Installing plugins..."
-brew install zsh-autosuggestions zsh-syntax-highlighting fzf
+ZSHRC="$HOME/.zshrc"
+ZSH_CUSTOM=${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}
 
-echo "🔹 Configuring fzf..."
+echo "🔹 Installing plugins into Oh My Zsh custom plugins dir..."
+mkdir -p "$ZSH_CUSTOM/plugins"
+
+# zsh-autosuggestions
+if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+  git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+else
+  echo "✅ zsh-autosuggestions already installed."
+fi
+
+# zsh-syntax-highlighting
+if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+else
+  echo "✅ zsh-syntax-highlighting already installed."
+fi
+
+# fzf (still via Homebrew for system-wide integration)
+brew install fzf
 $(brew --prefix)/opt/fzf/install --all
 
-ZSHRC="$HOME/.zshrc"
-
 echo "🔹 Installing Powerlevel10k theme..."
-if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-    ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH_CUSTOM/themes/powerlevel10k"
+else
+  echo "✅ Powerlevel10k already installed."
 fi
 
 # Configure theme in .zshrc
@@ -43,14 +60,6 @@ if grep -q "plugins=(" "$ZSHRC"; then
   sed -i '' 's/^plugins=(.*)/plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf)/' "$ZSHRC" || true
 else
   echo "plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf)" >> "$ZSHRC"
-fi
-
-# Ensure plugin sourcing is added
-if ! grep -q "zsh-syntax-highlighting" "$ZSHRC"; then
-  echo 'source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh' >> "$ZSHRC"
-fi
-if ! grep -q "zsh-autosuggestions" "$ZSHRC"; then
-  echo 'source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh' >> "$ZSHRC"
 fi
 
 echo "🔹 Adding useful aliases..."
